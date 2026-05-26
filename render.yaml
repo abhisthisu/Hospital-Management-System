@@ -1,6 +1,4 @@
 services:
   - type: web
     name: hospital-management
-    env: java
-    buildCommand: chmod +x mvnw && ./mvnw clean package
-    startCommand: java -jar target/demo-0.0.1-SNAPSHOT.jar
+    runtime: docker
