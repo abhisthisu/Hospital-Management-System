@@ -1,28 +1,321 @@
 <!DOCTYPE html>
-<html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Hospital Management</title>
-</head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital Management System</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
+        body {
+            font-family: 'Segoe UI', Tinter, sans-serif;
+            background: #0d1117;
+            color: #e6edf3;
+            min-height: 100vh;
+        }
+
+        /* ── Header ── */
+        .header {
+            background: linear-gradient(135deg, #161b22 0%, #1c2128 100%);
+            border-bottom: 1px solid #30363d;
+            padding: 20px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .header h1 {
+            font-size: 1.6rem;
+            color: #58a6ff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .header h1 span { font-size: 1.8rem; }
+        .stat-badge {
+            background: #21262d;
+            border: 1px solid #30363d;
+            border-radius: 20px;
+            padding: 8px 20px;
+            font-size: 0.9rem;
+            color: #8b949e;
+        }
+        .stat-badge strong { color: #58a6ff; font-size: 1.1rem; }
+
+        /* ── Layout ── */
+        .container { max-width: 1300px; margin: 0 auto; padding: 30px 40px; }
+
+        /* ── Alert ── */
+        .alert {
+            background: #1a3a1a;
+            border: 1px solid #2ea043;
+            border-left: 4px solid #2ea043;
+            border-radius: 8px;
+            padding: 14px 20px;
+            margin-bottom: 24px;
+            color: #3fb950;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* ── Card ── */
+        .card {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            padding: 28px;
+            margin-bottom: 28px;
+        }
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #58a6ff;
+            margin-bottom: 22px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* ── Form Grid ── */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group label { font-size: 0.82rem; color: #8b949e; font-weight: 500; letter-spacing: 0.5px; text-transform: uppercase; }
+        .form-group input,
+        .form-group select {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 10px 14px;
+            color: #e6edf3;
+            font-size: 0.95rem;
+            transition: border-color 0.2s;
+            outline: none;
+        }
+        .form-group input:focus,
+        .form-group select:focus { border-color: #58a6ff; box-shadow: 0 0 0 3px rgba(88,166,255,0.1); }
+        .form-group input.error { border-color: #f85149; }
+        .error-msg { color: #f85149; font-size: 0.78rem; }
+        .form-group select option { background: #161b22; }
+
+        /* ── Buttons ── */
+        .btn-row { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
+        .btn {
+            padding: 10px 24px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+        }
+        .btn-primary { background: #238636; color: #fff; }
+        .btn-primary:hover { background: #2ea043; transform: translateY(-1px); }
+        .btn-blue { background: #1f6feb; color: #fff; }
+        .btn-blue:hover { background: #388bfd; transform: translateY(-1px); }
+        .btn-danger { background: #da3633; color: #fff; font-size: 0.8rem; padding: 6px 14px; }
+        .btn-danger:hover { background: #f85149; }
+        .btn-edit { background: #9e6a03; color: #fff; font-size: 0.8rem; padding: 6px 14px; }
+        .btn-edit:hover { background: #bb8009; }
+        .btn-secondary { background: #21262d; color: #8b949e; border: 1px solid #30363d; }
+        .btn-secondary:hover { background: #30363d; color: #e6edf3; }
+
+        /* ── Search ── */
+        .search-row { display: flex; gap: 10px; align-items: flex-end; }
+        .search-row input { flex: 1; }
+        .search-info { color: #8b949e; font-size: 0.85rem; margin-top: 10px; font-style: italic; }
+
+        /* ── Table ── */
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        thead tr { background: #21262d; }
+        th {
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #8b949e;
+            font-weight: 600;
+        }
+        td { padding: 12px 16px; font-size: 0.9rem; border-top: 1px solid #21262d; }
+        tr:hover td { background: #1c2128; }
+        .id-badge {
+            background: #21262d;
+            border-radius: 6px;
+            padding: 2px 10px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: #8b949e;
+        }
+        .gender-m { color: #58a6ff; font-weight: 600; }
+        .gender-f { color: #f778ba; font-weight: 600; }
+        .gender-o { color: #a5d6ff; font-weight: 600; }
+        .actions { display: flex; gap: 8px; }
+        .empty-row td { text-align: center; padding: 50px; color: #8b949e; font-style: italic; }
+    </style>
+</head>
 <body>
 
-<h1>Patient Registration</h1>
+<!-- Header -->
+<div class="header">
+    <h1><span>🏥</span> Hospital Management System</h1>
+    <div class="stat-badge">
+        Total Patients: <strong th:text="${totalPatients}">0</strong>
+    </div>
+</div>
 
-<form>
+<div class="container">
 
-    <input type="text" placeholder="Name"><br><br>
+    <!-- Flash message -->
+    <div class="alert" th:if="${successMsg}">
+        ✅ <span th:text="${successMsg}"></span>
+    </div>
 
-    <input type="number" placeholder="Age"><br><br>
+    <!-- ── Add / Edit Patient Form ── -->
+    <div class="card">
+        <div class="card-title">
+            <span th:if="${editMode}">✏️ Edit Patient</span>
+            <span th:unless="${editMode}">➕ Add New Patient</span>
+        </div>
 
-    <input type="text" placeholder="Gender"><br><br>
+        <form th:action="${editMode} ? '/updatePatient' : '/savePatient'"
+              th:object="${patient}" method="post">
 
-    <input type="text" placeholder="Phone"><br><br>
+            <!-- Hidden ID for edit -->
+            <input type="hidden" th:field="*{id}" th:if="${editMode}" />
 
-    <input type="text" placeholder="Address"><br><br>
+            <div class="form-grid">
 
-    <button>Save Patient</button>
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" th:field="*{name}" placeholder="e.g. Rahul Sharma"
+                           th:classappend="${#fields.hasErrors('name')} ? 'error' : ''" />
+                    <span class="error-msg" th:if="${#fields.hasErrors('name')}"
+                          th:errors="*{name}"></span>
+                </div>
 
-</form>
+                <div class="form-group">
+                    <label>Age</label>
+                    <input type="number" th:field="*{age}" placeholder="e.g. 30" min="0" max="150"
+                           th:classappend="${#fields.hasErrors('age')} ? 'error' : ''" />
+                    <span class="error-msg" th:if="${#fields.hasErrors('age')}"
+                          th:errors="*{age}"></span>
+                </div>
 
+                <div class="form-group">
+                    <label>Gender</label>
+                    <select th:field="*{gender}"
+                            th:classappend="${#fields.hasErrors('gender')} ? 'error' : ''">
+                        <option value="">-- Select --</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                    </select>
+                    <span class="error-msg" th:if="${#fields.hasErrors('gender')}"
+                          th:errors="*{gender}"></span>
+                </div>
+
+                <div class="form-group">
+                    <label>Phone</label>
+                    <input type="text" th:field="*{phone}" placeholder="10-digit number"
+                           th:classappend="${#fields.hasErrors('phone')} ? 'error' : ''" />
+                    <span class="error-msg" th:if="${#fields.hasErrors('phone')}"
+                          th:errors="*{phone}"></span>
+                </div>
+
+                <div class="form-group">
+                    <label>Address</label>
+                    <input type="text" th:field="*{address}" placeholder="City, State"
+                           th:classappend="${#fields.hasErrors('address')} ? 'error' : ''" />
+                    <span class="error-msg" th:if="${#fields.hasErrors('address')}"
+                          th:errors="*{address}"></span>
+                </div>
+
+            </div>
+
+            <div class="btn-row">
+                <button type="submit" class="btn btn-primary" th:if="${!editMode}">
+                    ➕ Add Patient
+                </button>
+                <button type="submit" class="btn btn-blue" th:if="${editMode}">
+                    💾 Save Changes
+                </button>
+                <a href="/" class="btn btn-secondary" th:if="${editMode}">✖ Cancel</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- ── Search ── -->
+    <div class="card">
+        <div class="card-title">🔍 Search Patients</div>
+        <form action="/searchPatient" method="get">
+            <div class="search-row">
+                <div class="form-group" style="flex:1">
+                    <input type="text" name="name" placeholder="Search by patient name..."
+                           th:value="${searchQuery}" />
+                </div>
+                <button type="submit" class="btn btn-blue">Search</button>
+                <a href="/" class="btn btn-secondary">Clear</a>
+            </div>
+        </form>
+        <div class="search-info" th:if="${searchQuery}">
+            Showing results for: "<strong th:text="${searchQuery}"></strong>"
+            — <span th:text="${patients.size()}"></span> found
+        </div>
+    </div>
+
+    <!-- ── Patient Table ── -->
+    <div class="card">
+        <div class="card-title">🧑‍⚕️ Patient Records</div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Age</th>
+                    <th>Gender</th>
+                    <th>Phone</th>
+                    <th>Address</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:if="${patients.empty}">
+                    <td colspan="7" class="empty-row">No patients found. Add your first patient above.</td>
+                </tr>
+                <tr th:each="p : ${patients}">
+                    <td><span class="id-badge" th:text="${p.id}"></span></td>
+                    <td th:text="${p.name}"></td>
+                    <td th:text="${p.age}"></td>
+                    <td>
+                        <span th:if="${p.gender == 'Male'}"   class="gender-m" th:text="${p.gender}"></span>
+                        <span th:if="${p.gender == 'Female'}" class="gender-f" th:text="${p.gender}"></span>
+                        <span th:if="${p.gender == 'Other'}"  class="gender-o" th:text="${p.gender}"></span>
+                    </td>
+                    <td th:text="${p.phone}"></td>
+                    <td th:text="${p.address}"></td>
+                    <td>
+                        <div class="actions">
+                            <a th:href="@{/editPatient/{id}(id=${p.id})}" class="btn btn-edit">✏️ Edit</a>
+                            <a th:href="@{/deletePatient/{id}(id=${p.id})}" class="btn btn-danger"
+                               onclick="return confirm('Delete this patient?')">🗑 Delete</a>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
 </body>
 </html>
